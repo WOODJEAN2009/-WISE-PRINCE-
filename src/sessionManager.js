@@ -15,6 +15,7 @@ export async function createSession(phoneNumber) {
   const accessToken = crypto.randomBytes(32).toString("hex");
 
   const folder = path.join("sessions", sessionId);
+
   fs.mkdirSync(folder, { recursive: true });
 
   const { state, saveCreds } =
@@ -22,7 +23,8 @@ export async function createSession(phoneNumber) {
 
   const sock = makeWASocket({
     auth: state,
-    printQRInTerminal: false
+    printQRInTerminal: false,
+    browser: ["WISE PRINCE", "Chrome", "1.0.0"]
   });
 
   const session = {
@@ -30,6 +32,7 @@ export async function createSession(phoneNumber) {
     phoneNumber,
     status: "connecting",
     qr: null,
+    pairingCode: null,
     accessToken
   };
 
@@ -45,6 +48,7 @@ export async function createSession(phoneNumber) {
     if (update.connection === "open") {
       session.status = "online";
       session.qr = null;
+      session.pairingCode = null;
     }
 
     if (update.connection === "close") {
@@ -57,6 +61,26 @@ export async function createSession(phoneNumber) {
     accessToken,
     status: session.status
   };
+}
+
+export async function requestPairingCode(sessionId, accessToken) {
+  const session = getSession(sessionId, accessToken);
+
+  if (!session) {
+    throw new Error("Unauthorized session");
+  }
+
+  if (session.sock.authState.creds.registered) {
+    throw new Error("WhatsApp already connected");
+  }
+
+  const code = await session.sock.requestPairingCode(
+    session.phoneNumber
+  );
+
+  session.pairingCode = code;
+
+  return code;
 }
 
 export function getSession(sessionId, accessToken) {
@@ -74,7 +98,7 @@ export async function disconnectSession(sessionId, accessToken) {
 
   if (!session) return false;
 
-  await session.sock.logout();
+  session.sock.end(undefined);
   sessions.delete(sessionId);
 
   return true;
