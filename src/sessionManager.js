@@ -1,77 +1,86 @@
 import makeWASocket, {
-  useMultiFileAuthState,
-  DisconnectReason
+  DisconnectReason,
+  useMultiFileAuthState
 } from "@whiskeysockets/baileys";
 
-import QRCode from "qrcode";
-import crypto from "crypto";
-import fs from "fs";
+import {
+  randomUUID,
+  randomBytes
+} from "crypto";
+
 import path from "path";
+import fs from "fs/promises";
 
 const sessions = new Map();
 
 export async function createSession(phoneNumber) {
-  const sessionId = crypto.randomUUID();
-  const accessToken = crypto.randomBytes(32).toString("hex");
+  const id = randomUUID();
+  const accessToken = randomBytes(32).toString("hex");
 
-  const folder = path.join("sessions", sessionId);
+  const authFolder = path.join(
+    process.cwd(),
+    "sessions",
+    id
+  );
 
-  fs.mkdirSync(folder, { recursive: true });
+  await fs.mkdir(authFolder, { recursive: true });
 
   const { state, saveCreds } =
-    await useMultiFileAuthState(folder);
+    await useMultiFileAuthState(authFolder);
 
   const sock = makeWASocket({
     auth: state,
-    printQRInTerminal: false,
-    browser: ["WISE PRINCE", "Chrome", "1.0.0"]
+    printQRInTerminal: false
   });
 
   const session = {
+    id,
     sock,
+    state,
     phoneNumber,
+    accessToken,
     status: "connecting",
     qr: null,
-    pairingCode: null,
-    accessToken
+    pairingCode: null
   };
 
-  sessions.set(sessionId, session);
+  sessions.set(id, session);
 
   sock.ev.on("creds.update", saveCreds);
 
-  sock.ev.on("connection.update", async (update) => {
+  sock.ev.on("connection.update", (update) => {
     if (update.qr) {
-      session.qr = await QRCode.toDataURL(update.qr);
+      session.qr = update.qr;
+      session.status = "qr";
     }
 
     if (update.connection === "open") {
-      session.status = "online";
+      session.status = "connected";
       session.qr = null;
       session.pairingCode = null;
     }
 
     if (update.connection === "close") {
-      session.status = "offline";
+      session.status = "disconnected";
     }
   });
 
   return {
-    sessionId,
+    id,
     accessToken,
     status: session.status
   };
 }
 
-export async function requestPairingCode(sessionId, accessToken) {
-  const session = getSession(sessionId, accessToken);
+export async function requestPairingCode(id, token) {
+  const session = sessions.get(id);
 
-  if (!session) {
-    throw new Error("Unauthorized session");
+  if (!session || session.accessToken !== token) {
+    throw new Error("Unauthorized");
   }
 
-  if (session.sock.authState.creds.registered) {
-    throw new Error("WhatsApp already connected");
+  if (session.state.creds.registered) {
+    throw new Error("WhatsApp already registered");
   }
 
   const code = await session.sock.requestPairingCode(
@@ -83,23 +92,25 @@ export async function requestPairingCode(sessionId, accessToken) {
   return code;
 }
 
-export function getSession(sessionId, accessToken) {
-  const session = sessions.get(sessionId);
+export function getSession(id, token) {
+  const session = sessions.get(id);
 
-  if (!session || session.accessToken !== accessToken) {
+  if (!session || session.accessToken !== token) {
     return null;
   }
 
   return session;
 }
 
-export async function disconnectSession(sessionId, accessToken) {
-  const session = getSession(sessionId, accessToken);
+export async function disconnectSession(id, token) {
+  const session = getSession(id, token);
 
-  if (!session) return false;
+  if (!session) {
+    return false;
+  }
 
   session.sock.end(undefined);
-  sessions.delete(sessionId);
+  sessions.delete(id);
 
   return true;
 }
