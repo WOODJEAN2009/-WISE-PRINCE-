@@ -6,13 +6,15 @@ import makeWASocket, {
 import QRCode from "qrcode";
 import crypto from "crypto";
 import fs from "fs";
+import path from "path";
 
 const sessions = new Map();
 
 export async function createSession(phoneNumber) {
   const sessionId = crypto.randomUUID();
-  const folder = `sessions/${sessionId}`;
+  const accessToken = crypto.randomBytes(32).toString("hex");
 
+  const folder = path.join("sessions", sessionId);
   fs.mkdirSync(folder, { recursive: true });
 
   const { state, saveCreds } =
@@ -23,25 +25,26 @@ export async function createSession(phoneNumber) {
     printQRInTerminal: false
   });
 
-  sessions.set(sessionId, {
+  const session = {
     sock,
+    phoneNumber,
     status: "connecting",
     qr: null,
-    pairingCode: null
-  });
+    accessToken
+  };
+
+  sessions.set(sessionId, session);
 
   sock.ev.on("creds.update", saveCreds);
 
   sock.ev.on("connection.update", async (update) => {
-    const session = sessions.get(sessionId);
-    if (!session) return;
-
     if (update.qr) {
       session.qr = await QRCode.toDataURL(update.qr);
     }
 
     if (update.connection === "open") {
       session.status = "online";
+      session.qr = null;
     }
 
     if (update.connection === "close") {
@@ -51,10 +54,28 @@ export async function createSession(phoneNumber) {
 
   return {
     sessionId,
-    status: "connecting"
+    accessToken,
+    status: session.status
   };
 }
 
-export function getSession(sessionId) {
-  return sessions.get(sessionId) || null;
-    }
+export function getSession(sessionId, accessToken) {
+  const session = sessions.get(sessionId);
+
+  if (!session || session.accessToken !== accessToken) {
+    return null;
+  }
+
+  return session;
+}
+
+export async function disconnectSession(sessionId, accessToken) {
+  const session = getSession(sessionId, accessToken);
+
+  if (!session) return false;
+
+  await session.sock.logout();
+  sessions.delete(sessionId);
+
+  return true;
+}
