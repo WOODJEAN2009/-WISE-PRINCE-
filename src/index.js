@@ -1,9 +1,11 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+
 import {
   createSession,
   getSession,
+  requestPairingCode,
   disconnectSession
 } from "./sessionManager.js";
 
@@ -23,6 +25,7 @@ app.get("/api/status", (req, res) => {
   });
 });
 
+// CREATE SESSION
 app.post("/api/session/create", async (req, res) => {
   try {
     const { phoneNumber } = req.body;
@@ -32,7 +35,7 @@ app.post("/api/session/create", async (req, res) => {
       !/^\d{8,15}$/.test(phoneNumber)
     ) {
       return res.status(400).json({
-        error: "Enter a valid number with country code, digits only."
+        error: "Invalid phone number"
       });
     }
 
@@ -47,45 +50,12 @@ app.post("/api/session/create", async (req, res) => {
   }
 });
 
-app.get("/api/session/:id", (req, res) => {
-  const token = req.get("X-Session-Token");
-  const session = getSession(req.params.id, token);
-
-  if (!session) {
-    return res.status(401).json({
-      error: "Unauthorized"
-    });
-  }
-
-  res.json({
-    status: session.status,
-    qr: session.qr
-  });
-});
-
-app.post("/api/session/:id/disconnect", async (req, res) => {
-  const token = req.get("X-Session-Token");
-
+// REQUEST PAIRING CODE
+app.post("/api/session/:id/pairing", async (req, res) => {
   try {
-    const disconnected = await disconnectSession(
-      req.params.id,
-      token
-    );
+    const token = req.get("X-Session-Token");
 
-    if (!disconnected) {
-      return res.status(401).json({
-        error: "Unauthorized"
-      });
-    }
+    const session = getSession(req.params.id, token);
 
-    res.json({ status: "disconnected" });
-  } catch (error) {
-    res.status(500).json({
-      error: "Disconnect failed"
-    });
-  }
-});
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`WISE PRINCE running on port ${PORT}`);
-});
+    if (!session) {
+      return res.status(401
