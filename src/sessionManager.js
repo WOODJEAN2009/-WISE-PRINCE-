@@ -1,5 +1,6 @@
 import makeWASocket, {
-  useMultiFileAuthState
+  useMultiFileAuthState,
+  DisconnectReason
 } from "@whiskeysockets/baileys";
 
 import {
@@ -47,13 +48,33 @@ export async function createSession(phoneNumber) {
   sock.ev.on("creds.update", saveCreds);
 
   sock.ev.on("connection.update", (update) => {
-    if (update.connection === "open") {
+    const { connection, lastDisconnect } = update;
+
+    if (connection === "open") {
       session.status = "connected";
       session.pairingCode = null;
+
+      console.log(
+        `WhatsApp connected: ${session.id}`
+      );
     }
 
-    if (update.connection === "close") {
+    if (connection === "close") {
       session.status = "disconnected";
+
+      const shouldReconnect =
+        lastDisconnect?.error?.output?.statusCode !==
+        DisconnectReason.loggedOut;
+
+      if (shouldReconnect) {
+        console.log(
+          `WhatsApp disconnected. Session: ${session.id}`
+        );
+      } else {
+        console.log(
+          `WhatsApp logged out. Session: ${session.id}`
+        );
+      }
     }
   });
 
@@ -75,19 +96,47 @@ export async function requestPairingCode(id, token) {
     throw new Error("WhatsApp already registered");
   }
 
-  const code = await session.sock.requestPairingCode(
-    session.phoneNumber
-  );
+  if (!session.phoneNumber) {
+    throw new Error("Phone number missing");
+  }
 
-  session.pairingCode = code;
+  const phoneNumber =
+    String(session.phoneNumber).replace(/\D/g, "");
 
-  return code;
+  if (!phoneNumber) {
+    throw new Error("Invalid phone number");
+  }
+
+  try {
+    const code =
+      await session.sock.requestPairingCode(
+        phoneNumber
+      );
+
+    session.pairingCode = code;
+    session.status = "pairing";
+
+    return code;
+  } catch (error) {
+    console.error(
+      "Pairing code request error:",
+      error
+    );
+
+    throw new Error(
+      error?.message ||
+      "Pairing code unavailable"
+    );
+  }
 }
 
 export function getSession(id, token) {
   const session = sessions.get(id);
 
-  if (!session || session.accessToken !== token) {
+  if (
+    !session ||
+    session.accessToken !== token
+  ) {
     return null;
   }
 
@@ -95,13 +144,22 @@ export function getSession(id, token) {
 }
 
 export async function disconnectSession(id, token) {
-  const session = getSession(id, token);
+  const session =
+    getSession(id, token);
 
   if (!session) {
     return false;
   }
 
-  session.sock.end(undefined);
+  try {
+    session.sock.end(undefined);
+  } catch (error) {
+    console.error(
+      "Disconnect error:",
+      error
+    );
+  }
+
   sessions.delete(id);
 
   return true;
