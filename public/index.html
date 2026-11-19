@@ -305,7 +305,52 @@
   const token = document.getElementById("token");
   const status = document.getElementById("status");
   const pairingCode = document.getElementById("pairingCode");
+const qrImage = document.getElementById("qrImage");
+const qrMessage = document.getElementById("qrMessage");
 
+let qrPolling = null;
+
+async function checkSession() {
+  if (!currentSessionId || !currentToken) return;
+
+  try {
+    const response = await fetch(
+      `/api/session/${encodeURIComponent(currentSessionId)}`,
+      {
+        headers: {
+          "X-Session-Token": currentToken
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Session check failed");
+    }
+
+    status.textContent = data.status;
+
+    if (data.qr) {
+      qrImage.src = data.qr;
+      qrImage.style.display = "block";
+      qrMessage.textContent = "Scan this QR with WhatsApp.";
+    } else {
+      qrImage.style.display = "none";
+      qrMessage.textContent = "Waiting for QR Code...";
+    }
+
+    if (data.status === "connected") {
+      qrImage.style.display = "none";
+      qrMessage.textContent = "WhatsApp connected successfully!";
+      clearInterval(qrPolling);
+    }
+
+  } catch (error) {
+    console.error(error);
+    qrMessage.textContent = "Unable to check session.";
+  }
+        }
   let currentSessionId = null;
   let currentToken = null;
 
