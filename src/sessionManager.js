@@ -9,7 +9,7 @@ import {
 } from "crypto";
 
 import path from "path";
-import fs from "fs/promises";
+import QRCode from "qrcode";
 
 const sessions = new Map();
 
