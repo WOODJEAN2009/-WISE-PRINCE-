@@ -48,8 +48,7 @@ export async function createSession(phoneNumber) {
 
   sock.ev.on("creds.update", saveCreds);
 
-  sock.ev.on("connection.update", (update) => {
-    if (update.qr) {
+  sock.ev.on("connection.update", async (update) => {
       session.qr = await QRCode.toDataURL(update.qr);
       session.status = "qr";
     }
