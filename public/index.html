@@ -411,7 +411,12 @@ async function checkSession() {
       status.textContent = data.status;
 
       result.classList.add("show");
+if (qrPolling) {
+  clearInterval(qrPolling);
+}
 
+checkSession();
+qrPolling = setInterval(checkSession, 2000);
       showMessage(
         "Session created successfully.",
         "success"
