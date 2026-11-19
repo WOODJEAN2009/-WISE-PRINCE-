@@ -1,119 +1,458 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WISE PRINCE ✝️</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+  <title>WISE PRINCE ✝️</title>
 
-body {
-  background: #080808;
-  color: white;
-  font-family: Arial, sans-serif;
-}
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-header {
-  padding: 22px;
-  text-align: center;
-  border-bottom: 1px solid #b58b32;
-}
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top, #2b2100 0%, #090909 38%, #000 100%);
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 24px;
+    }
 
-.logo {
-  color: #d4af37;
-  font-size: 27px;
-  font-weight: bold;
-}
+    .container {
+      width: 100%;
+      max-width: 480px;
+      margin: auto;
+    }
 
-.hero {
-  text-align: center;
-  padding: 90px 20px;
-}
+    .logo {
+      text-align: center;
+      color: #d4af37;
+      font-size: 32px;
+      font-weight: 900;
+      margin-top: 25px;
+    }
 
-.hero h1 {
-  color: #d4af37;
-  font-size: 35px;
-  margin-bottom: 20px;
-}
+    .subtitle {
+      text-align: center;
+      color: #aaa;
+      margin-top: 8px;
+      margin-bottom: 30px;
+    }
 
-.hero p {
-  color: #bbb;
-  line-height: 1.7;
-  margin-bottom: 30px;
-}
+    .card {
+      background: rgba(15, 15, 15, 0.95);
+      border: 1px solid #3b300e;
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.08);
+    }
 
-button {
-  background: linear-gradient(135deg, #d4af37, #99701d);
-  color: black;
-  border: none;
-  padding: 14px 28px;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 16px;
-  cursor: pointer;
-}
+    h2 {
+      color: #d4af37;
+      text-align: center;
+      margin-bottom: 10px;
+    }
 
-.card {
-  max-width: 400px;
-  margin: 35px auto;
-  padding: 25px;
-  background: #151515;
-  border: 1px solid #80601f;
-  border-radius: 15px;
-}
+    .description {
+      text-align: center;
+      color: #aaa;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
 
-.card h2 {
-  color: #d4af37;
-  margin-bottom: 15px;
-}
+    label {
+      display: block;
+      color: #ddd;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
 
-footer {
-  text-align: center;
-  padding: 30px;
-  color: #888;
-}
-</style>
+    input {
+      width: 100%;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #4a3b12;
+      background: #090909;
+      color: white;
+      outline: none;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+
+    input:focus {
+      border-color: #d4af37;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      padding: 15px;
+      background: linear-gradient(135deg, #d4af37, #9b7414);
+      color: #000;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .result {
+      display: none;
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 12px;
+      background: #111;
+      border: 1px solid #3b300e;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .item {
+      margin-bottom: 15px;
+    }
+
+    .item:last-child {
+      margin-bottom: 0;
+    }
+
+    .title {
+      color: #999;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .value {
+      color: #d4af37;
+      font-weight: 800;
+      word-break: break-all;
+    }
+
+    .copy {
+      margin-top: 7px;
+      padding: 9px;
+      font-size: 13px;
+      background: #222;
+      color: #d4af37;
+      border: 1px solid #4a3b12;
+    }
+
+    .message {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    .success {
+      color: #62d48b;
+    }
+
+    .error {
+      color: #ff6b6b;
+    }
+
+    .steps {
+      margin-top: 25px;
+      color: #999;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .steps strong {
+      color: #d4af37;
+    }
+  </style>
 </head>
 
 <body>
 
-<header>
-  <div class="logo">👑 WISE PRINCE ✝️</div>
-</header>
+<div class="container">
 
-<section class="hero">
-  <h1>WELCOME TO WISE PRINCE</h1>
+  <div class="logo">
+    WISE PRINCE ✝️
+  </div>
 
-  <p>
-    Your WhatsApp Bot Management Platform.<br>
-    Connect, manage and control your sessions<br>
-    from one powerful dashboard.
-  </p>
+  <div class="subtitle">
+    WhatsApp Multi-Session System
+  </div>
 
-  <button onclick="alert('Login system coming soon!')">
-    GET STARTED
-  </button>
-</section>
+  <div class="card">
 
-<div class="card">
-  <h2>🤖 WhatsApp Bot</h2>
-  <p>Manage your WhatsApp bot sessions in one place.</p>
+    <h2>Connect WhatsApp</h2>
+
+    <p class="description">
+      Enter your WhatsApp number with country code.
+      Digits only.
+    </p>
+
+    <label for="phone">
+      WhatsApp Number
+    </label>
+
+    <input
+      id="phone"
+      type="tel"
+      inputmode="numeric"
+      placeholder="509XXXXXXXX"
+      maxlength="15"
+    />
+
+    <button id="connectBtn">
+      Create Session
+    </button>
+
+    <div id="message" class="message"></div>
+
+    <div id="result" class="result">
+
+      <div class="item">
+        <div class="title">
+          SESSION ID
+        </div>
+
+        <div id="sessionId" class="value"></div>
+
+        <button class="copy" id="copySession">
+          Copy Session ID
+        </button>
+      </div>
+
+      <div class="item">
+        <div class="title">
+          ACCESS TOKEN
+        </div>
+
+        <div id="token" class="value"></div>
+
+        <button class="copy" id="copyToken">
+          Copy Token
+        </button>
+      </div>
+
+      <div class="item">
+        <div class="title">
+          STATUS
+        </div>
+
+        <div id="status" class="value">
+          Connecting...
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="title">
+          PAIRING CODE
+        </div>
+
+        <div id="pairingCode" class="value">
+          Waiting...
+        </div>
+      </div>
+
+      <button id="pairBtn" style="margin-top: 10px;">
+        Get Pairing Code
+      </button>
+
+    </div>
+
+    <div class="steps">
+      <strong>How it works:</strong><br>
+      1. Enter your WhatsApp number.<br>
+      2. Create your session.<br>
+      3. Get your pairing code.<br>
+      4. Open WhatsApp → Linked Devices.<br>
+      5. Choose Link with phone number.
+    </div>
+
+  </div>
+
 </div>
 
-<div class="card">
-  <h2>🔐 Secure Dashboard</h2>
-  <p>Your personal space to manage your bot.</p>
-</div>
+<script>
+  const API = "";
 
-<footer>
-  © 2026 WISE PRINCE ✝️<br>
-  All Rights Reserved.
-</footer>
+  const phoneInput = document.getElementById("phone");
+  const connectBtn = document.getElementById("connectBtn");
+  const pairBtn = document.getElementById("pairBtn");
+
+  const message = document.getElementById("message");
+  const result = document.getElementById("result");
+
+  const sessionId = document.getElementById("sessionId");
+  const token = document.getElementById("token");
+  const status = document.getElementById("status");
+  const pairingCode = document.getElementById("pairingCode");
+
+  let currentSessionId = null;
+  let currentToken = null;
+
+  function showMessage(text, type = "") {
+    message.textContent = text;
+    message.className = "message " + type;
+  }
+
+  function setLoading(button, loading) {
+    button.disabled = loading;
+    button.textContent = loading
+      ? "Please wait..."
+      : "Create Session";
+  }
+
+  connectBtn.addEventListener("click", async () => {
+
+    const phoneNumber = phoneInput.value.trim();
+
+    if (!/^\d{8,15}$/.test(phoneNumber)) {
+      showMessage(
+        "Enter a valid international number.",
+        "error"
+      );
+      return;
+    }
+
+    setLoading(connectBtn, true);
+    showMessage("Creating session...");
+
+    try {
+      const response = await fetch(
+        API + "/api/session/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            phoneNumber
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Session creation failed"
+        );
+      }
+
+      currentSessionId = data.id;
+      currentToken = data.accessToken;
+
+      sessionId.textContent = data.id;
+      token.textContent = data.accessToken;
+      status.textContent = data.status;
+
+      result.classList.add("show");
+
+      showMessage(
+        "Session created successfully.",
+        "success"
+      );
+
+      connectBtn.textContent = "Session Created";
+
+    } catch (error) {
+      console.error(error);
+
+      showMessage(
+        error.message || "Connection failed.",
+        "error"
+      );
+
+      connectBtn.disabled = false;
+    }
+  });
+
+  pairBtn.addEventListener("click", async () => {
+
+    if (!currentSessionId || !currentToken) {
+      showMessage(
+        "Create a session first.",
+        "error"
+      );
+      return;
+    }
+
+    pairBtn.disabled = true;
+    pairBtn.textContent = "Getting code...";
+
+    try {
+      const response = await fetch(
+        API +
+        "/api/session/" +
+        encodeURIComponent(currentSessionId) +
+        "/pairing",
+        {
+          method: "POST",
+          headers: {
+            "X-Session-Token": currentToken
+          }
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Pairing code unavailable"
+        );
+      }
+
+      pairingCode.textContent =
+        data.pairingCode || "Waiting...";
+
+      status.textContent = "Pairing code ready";
+
+      showMessage(
+        "Pairing code generated.",
+        "success"
+      );
+
+      pairBtn.textContent = "Refresh Pairing Code";
+      pairBtn.disabled = false;
+
+    } catch (error) {
+      console.error(error);
+
+      showMessage(
+        error.message || "Could not get pairing code.",
+        "error"
+      );
+
+      pairBtn.textContent = "Get Pairing Code";
+      pairBtn.disabled = false;
+    }
+  });
+
+  document.getElementById("copySession")
+    .addEventListener("click", async () => {
+      if (currentSessionId) {
+        await navigator.clipboard.writeText(
+          currentSessionId
+        );
+      }
+    });
+
+  document.getElementById("copyToken")
+    .addEventListener("click", async () => {
+      if (currentToken) {
+        await navigator.clipboard.writeText(
+          currentToken
+        );
+      }
+    });
+</script>
 
 </body>
-  </html>
+</html>
