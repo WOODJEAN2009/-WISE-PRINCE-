@@ -1,5 +1,4 @@
 import makeWASocket, {
-  DisconnectReason,
   useMultiFileAuthState
 } from "@whiskeysockets/baileys";
 
@@ -9,7 +8,7 @@ import {
 } from "crypto";
 
 import path from "path";
-import QRCode from "qrcode";
+import fs from "fs/promises";
 
 const sessions = new Map();
 
@@ -40,7 +39,6 @@ export async function createSession(phoneNumber) {
     phoneNumber,
     accessToken,
     status: "connecting",
-    qr: null,
     pairingCode: null
   };
 
@@ -48,14 +46,9 @@ export async function createSession(phoneNumber) {
 
   sock.ev.on("creds.update", saveCreds);
 
-  sock.ev.on("connection.update", async (update) => {
-      session.qr = await QRCode.toDataURL(update.qr);
-      session.status = "qr";
-    }
-
+  sock.ev.on("connection.update", (update) => {
     if (update.connection === "open") {
       session.status = "connected";
-      session.qr = null;
       session.pairingCode = null;
     }
 
